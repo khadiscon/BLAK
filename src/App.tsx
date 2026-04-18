@@ -16,6 +16,11 @@ import Career from './pages/Career';
 import Journal from './pages/Journal';
 import Blog from './pages/Blog';
 import Gallery from './pages/Gallery';
+import FatherFactor from './pages/articles/FatherFactor';
+import SelfDisclosure from './pages/articles/SelfDisclosure';
+import Trauma from './pages/articles/Trauma';
+import DepressionAgency from './pages/articles/DepressionAgency';
+import HopeDespair from './pages/articles/HopeDespair';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -41,6 +46,11 @@ export default function App() {
           <Route path="/journal" element={<Journal />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/journal/father-factor" element={<FatherFactor />} />
+          <Route path="/journal/self-disclosure" element={<SelfDisclosure />} />
+          <Route path="/journal/trauma" element={<Trauma />} />
+          <Route path="/journal/depression-agency" element={<DepressionAgency />} />
+          <Route path="/journal/hope-despair" element={<HopeDespair />} />
         </Routes>
       </Layout>
     </Router>
