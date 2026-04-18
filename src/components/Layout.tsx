@@ -21,6 +21,11 @@ const navItems: NavItem[] = [
   { name: 'Foundation', path: '/foundation' },
   { name: 'Helping Tribe', path: '/helping-tribe' },
   { name: 'Career', path: '/career' },
+  { name: 'Resources', dropdown: [
+    { name: 'Journal', path: '/journal' },
+    { name: 'Blog', path: '/blog' },
+    { name: 'Gallery', path: '/gallery' },
+  ] },
   { name: 'Contact Us', path: '/contact' },
 ];
 
