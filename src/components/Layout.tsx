@@ -66,25 +66,38 @@ function DropdownMenu({
 export function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [desktopDropdown, setDesktopDropdown] = useState<string | null>(null);
+  const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
-  // close dropdown on outside click
+  // lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  // close desktop dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
+        setDesktopDropdown(null);
       }
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // close dropdown on route change
+  // close everything on route change
   useEffect(() => {
-    setOpenDropdown(null);
+    setDesktopDropdown(null);
+    setMobileDropdown(null);
     setMenuOpen(false);
   }, [location.pathname]);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setMobileDropdown(null);
+  };
 
   const isActive = (item: NavItem) => {
     if ('path' in item && item.path) return location.pathname === item.path;
@@ -94,94 +107,101 @@ export function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-stone-100">
-      <nav ref={navRef} className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link to="/" className="text-xl font-bold tracking-tighter text-green-800 font-headline flex items-center gap-2" onClick={() => setMenuOpen(false)}>
-          Blakmoh
-        </Link>
+    <>
+      {/* Backdrop overlay */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+          onClick={closeMenu}
+        />
+      )}
 
-        {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-7">
-          {navItems.map((item) => {
-            if ('dropdown' in item && item.dropdown) {
-              const active = isActive(item);
+      <header className="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-stone-100">
+        <nav ref={navRef} className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+          {/* Logo */}
+          <Link to="/" className="text-xl font-bold tracking-tighter text-green-800 font-headline flex items-center gap-2" onClick={closeMenu}>
+            Blakmoh
+          </Link>
+
+          {/* Desktop nav */}
+          <div className="hidden lg:flex items-center gap-7">
+            {navItems.map((item) => {
+              if ('dropdown' in item && item.dropdown) {
+                const active = isActive(item);
+                return (
+                  <div key={item.name} className="relative">
+                    <button
+                      onClick={() => setDesktopDropdown(desktopDropdown === item.name ? null : item.name)}
+                      className={`flex items-center gap-1 font-medium text-sm transition-colors ${
+                        active ? 'text-green-700 font-bold' : 'text-stone-700 hover:text-green-700'
+                      }`}
+                    >
+                      {item.name}
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${desktopDropdown === item.name ? 'rotate-180' : ''}`} />
+                    </button>
+                    <DropdownMenu items={item.dropdown} visible={desktopDropdown === item.name} />
+                  </div>
+                );
+              }
               return (
-                <div key={item.name} className="relative">
-                  <button
-                    onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
-                    className={`flex items-center gap-1 font-medium text-sm transition-colors ${
-                      active ? 'text-green-700 font-bold' : 'text-stone-700 hover:text-green-700'
-                    }`}
-                  >
-                    {item.name}
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${openDropdown === item.name ? 'rotate-180' : ''}`} />
-                  </button>
-                  <DropdownMenu items={item.dropdown} visible={openDropdown === item.name} />
-                </div>
+                <Link
+                  key={item.path}
+                  to={item.path!}
+                  className={`font-medium text-sm transition-colors ${
+                    isActive(item)
+                      ? 'text-green-700 font-bold border-b-2 border-green-600 pb-0.5'
+                      : 'text-stone-700 hover:text-green-700'
+                  }`}
+                >
+                  {item.name}
+                </Link>
               );
-            }
-            return (
-              <Link
-                key={item.path}
-                to={item.path!}
-                className={`font-medium text-sm transition-colors ${
-                  isActive(item)
-                    ? 'text-green-700 font-bold border-b-2 border-green-600 pb-0.5'
-                    : 'text-stone-700 hover:text-green-700'
-                }`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
-        </div>
+            })}
+          </div>
 
-        {/* Book Session CTA */}
-        <button className="hidden lg:block bg-green-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-green-700 transition-colors">
-          Book Session
-        </button>
+          {/* Book Session CTA */}
+          <button className="hidden lg:block bg-green-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-green-700 transition-colors">
+            Book Session
+          </button>
 
-        {/* Hamburger */}
-        <button
-          className="lg:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-            className="lg:hidden overflow-hidden bg-white border-t border-stone-100"
+          {/* Hamburger */}
+          <button
+            className="lg:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
           >
-            <div className="flex flex-col px-6 py-4 gap-1">
+            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </nav>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="lg:hidden bg-white border-t border-stone-100 shadow-xl max-h-[80vh] overflow-y-auto">
+            <div className="flex flex-col px-4 py-3 gap-1">
               {navItems.map((item) => {
                 if ('dropdown' in item && item.dropdown) {
+                  const isOpen = mobileDropdown === item.name;
                   return (
                     <div key={item.name}>
                       <button
-                        onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
-                        className="w-full flex justify-between items-center py-3 px-4 rounded-xl text-stone-700 hover:bg-stone-50 font-medium text-base transition-colors"
+                        onClick={() => setMobileDropdown(isOpen ? null : item.name)}
+                        className={`w-full flex justify-between items-center py-3.5 px-4 font-medium text-base rounded-xl transition-colors ${
+                          isActive(item)
+                            ? 'bg-green-50 text-green-700'
+                            : 'text-stone-700 hover:bg-stone-50'
+                        }`}
                       >
-                        {item.name}
-                        <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.name ? 'rotate-180' : ''}`} />
+                        <span>{item.name}</span>
+                        <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                       </button>
-                      {openDropdown === item.name && (
-                        <div className="ml-4 mt-1 space-y-1">
+                      {isOpen && (
+                        <div className="mx-2 mb-2 bg-stone-50 rounded-xl border border-stone-100">
                           {item.dropdown.map((sub) => (
                             <Link
                               key={sub.path}
                               to={sub.path}
-                              onClick={() => setMenuOpen(false)}
-                              className="block py-2 px-4 rounded-lg text-stone-600 hover:text-green-700 text-sm font-medium"
+                              onClick={closeMenu}
+                              className="block py-3.5 px-5 text-sm font-medium text-stone-600 hover:text-green-700 border-b border-stone-100 last:border-0 transition-colors"
                             >
                               {sub.name}
                             </Link>
@@ -195,8 +215,8 @@ export function Navbar() {
                   <Link
                     key={item.path}
                     to={item.path!}
-                    onClick={() => setMenuOpen(false)}
-                    className={`py-3 px-4 rounded-xl font-medium text-base transition-colors ${
+                    onClick={closeMenu}
+                    className={`block py-3.5 px-4 rounded-xl font-medium text-base transition-colors ${
                       isActive(item)
                         ? 'bg-green-50 text-green-700 font-bold'
                         : 'text-stone-600 hover:bg-stone-50 hover:text-green-700'
@@ -206,14 +226,19 @@ export function Navbar() {
                   </Link>
                 );
               })}
-              <button className="mt-3 w-full bg-green-600 text-white py-3 rounded-full font-bold transition-all active:scale-95">
-                Book Session
-              </button>
+              <div className="pt-2 pb-1">
+                <button
+                  onClick={closeMenu}
+                  className="w-full bg-green-600 text-white py-3.5 rounded-full font-bold transition-all active:scale-95 text-sm"
+                >
+                  Book Session
+                </button>
+              </div>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
-    </header>
+      </header>
+    </>
   );
 }
 
