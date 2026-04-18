@@ -1,85 +1,207 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Phone, MapPin, Send, Menu, X, Facebook, Linkedin, Twitter, Instagram, Youtube } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Menu, X, Facebook, Linkedin, Twitter, Instagram, Youtube, ChevronDown } from 'lucide-react';
 
+// ─── Nav structure ────────────────────────────────────────────────────────────
+type NavItem =
+  | { name: string; path: string; dropdown?: never }
+  | { name: string; path?: never; dropdown: { name: string; path: string }[] };
+
+const navItems: NavItem[] = [
+  { name: 'Home', path: '/' },
+  {
+    name: 'About Us',
+    dropdown: [
+      { name: 'Who We Are', path: '/about' },
+      { name: 'Our Team', path: '/about#team' },
+    ],
+  },
+  { name: 'Service', path: '/services' },
+  { name: 'Foundation', path: '/foundation' },
+  { name: 'Helping Tribe', path: '/helping-tribe' },
+  { name: 'Career', path: '/career' },
+  { name: 'Contact Us', path: '/contact' },
+];
+
+// ─── Dropdown Menu ────────────────────────────────────────────────────────────
+function DropdownMenu({
+  items,
+  visible,
+}: {
+  items: { name: string; path: string }[];
+  visible: boolean;
+}) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
+          transition={{ duration: 0.18 }}
+          className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-stone-100 overflow-hidden z-50"
+        >
+          {items.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className="block px-4 py-3 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 font-medium transition-colors"
+            >
+              {item.name}
+            </Link>
+          ))}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
 export function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Services', path: '/services' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
-  ];
+  // close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // close dropdown on route change
+  useEffect(() => {
+    setOpenDropdown(null);
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  const isActive = (item: NavItem) => {
+    if ('path' in item && item.path) return location.pathname === item.path;
+    if ('dropdown' in item && item.dropdown)
+      return item.dropdown.some((d) => location.pathname === d.path);
+    return false;
+  };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(27,28,26,0.06)]">
-      <nav className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-        <Link to="/" className="text-xl font-bold tracking-tighter text-green-800 font-headline" onClick={() => setMenuOpen(false)}>
+    <header className="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-stone-100">
+      <nav ref={navRef} className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        {/* Logo */}
+        <Link to="/" className="text-xl font-bold tracking-tighter text-green-800 font-headline flex items-center gap-2" onClick={() => setMenuOpen(false)}>
           Blakmoh
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center space-x-10">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`font-headline tracking-tight transition-all duration-300 hover:translate-y-[-2px] ${
-                location.pathname === link.path
-                  ? 'text-green-700 font-bold border-b-2 border-green-600'
-                  : 'text-stone-600 hover:text-green-700'
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
+        <div className="hidden lg:flex items-center gap-7">
+          {navItems.map((item) => {
+            if ('dropdown' in item && item.dropdown) {
+              const active = isActive(item);
+              return (
+                <div key={item.name} className="relative">
+                  <button
+                    onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                    className={`flex items-center gap-1 font-medium text-sm transition-colors ${
+                      active ? 'text-green-700 font-bold' : 'text-stone-700 hover:text-green-700'
+                    }`}
+                  >
+                    {item.name}
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${openDropdown === item.name ? 'rotate-180' : ''}`} />
+                  </button>
+                  <DropdownMenu items={item.dropdown} visible={openDropdown === item.name} />
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={item.path}
+                to={item.path!}
+                className={`font-medium text-sm transition-colors ${
+                  isActive(item)
+                    ? 'text-green-700 font-bold border-b-2 border-green-600 pb-0.5'
+                    : 'text-stone-700 hover:text-green-700'
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button className="hidden md:block bg-primary-container text-on-primary-container px-6 py-2.5 rounded-full font-bold hover:translate-y-[-2px] transition-all duration-300 hover:shadow-lg active:opacity-80 active:scale-95 font-body">
-            Book Session
-          </button>
+        {/* Book Session CTA */}
+        <button className="hidden lg:block bg-green-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-green-700 transition-colors">
+          Book Session
+        </button>
 
-          {/* Hamburger - mobile only */}
-          <button
-            className="md:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
+        {/* Hamburger */}
+        <button
+          className="lg:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition-colors"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </nav>
 
-      {/* Mobile dropdown */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden overflow-hidden bg-white border-t border-stone-100"
+            transition={{ duration: 0.25 }}
+            className="lg:hidden overflow-hidden bg-white border-t border-stone-100"
           >
             <div className="flex flex-col px-6 py-4 gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMenuOpen(false)}
-                  className={`py-3 px-4 rounded-xl font-headline text-base transition-colors ${
-                    location.pathname === link.path
-                      ? 'bg-green-50 text-green-700 font-bold'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-green-700'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              <button className="mt-3 w-full bg-primary-container text-on-primary-container py-3 rounded-full font-bold font-body transition-all active:scale-95">
+              {navItems.map((item) => {
+                if ('dropdown' in item && item.dropdown) {
+                  return (
+                    <div key={item.name}>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                        className="w-full flex justify-between items-center py-3 px-4 rounded-xl text-stone-700 hover:bg-stone-50 font-medium text-base transition-colors"
+                      >
+                        {item.name}
+                        <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === item.name ? 'rotate-180' : ''}`} />
+                      </button>
+                      {openDropdown === item.name && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {item.dropdown.map((sub) => (
+                            <Link
+                              key={sub.path}
+                              to={sub.path}
+                              onClick={() => setMenuOpen(false)}
+                              className="block py-2 px-4 rounded-lg text-stone-600 hover:text-green-700 text-sm font-medium"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path!}
+                    onClick={() => setMenuOpen(false)}
+                    className={`py-3 px-4 rounded-xl font-medium text-base transition-colors ${
+                      isActive(item)
+                        ? 'bg-green-50 text-green-700 font-bold'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-green-700'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+              <button className="mt-3 w-full bg-green-600 text-white py-3 rounded-full font-bold transition-all active:scale-95">
                 Book Session
               </button>
             </div>
@@ -90,16 +212,17 @@ export function Navbar() {
   );
 }
 
+// ─── Footer ───────────────────────────────────────────────────────────────────
 export function Footer() {
   return (
     <footer className="bg-stone-900 text-white w-full mt-20">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-          {/* About */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="text-xl font-bold mb-4">Blakmoh</div>
             <p className="text-stone-400 text-sm leading-relaxed mb-6 max-w-xs">
-              BlakMoh Consulting (BN3303037) is a learning organization providing tailored solutions to all categories of persons and organizations in need of psychological support services.
+              BlakMoh Consulting (BN3303037) is a learning organization providing tailored solutions to all categories
+              of persons and organizations in need of psychological support services.
             </p>
             <div className="flex gap-4">
               <Facebook className="w-5 h-5 text-stone-400 hover:text-white cursor-pointer transition-colors" />
@@ -110,7 +233,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h4 className="font-bold mb-5 text-white">Quick Links</h4>
             <div className="flex flex-col gap-3 text-sm">
@@ -121,19 +243,17 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Company */}
           <div>
             <h4 className="font-bold mb-5 text-white">Company</h4>
             <div className="flex flex-col gap-3 text-sm">
-              <a href="#" className="text-stone-400 hover:text-white transition-colors">Company Profile</a>
+              <Link to="/about" className="text-stone-400 hover:text-white transition-colors">Company Profile</Link>
               <a href="#" className="text-stone-400 hover:text-white transition-colors">Journal</a>
-              <a href="#" className="text-stone-400 hover:text-white transition-colors">Helping Tribe!</a>
-              <a href="#" className="text-stone-400 hover:text-white transition-colors">BlakMoh Wellbeing Foundation</a>
-              <a href="#" className="text-stone-400 hover:text-white transition-colors">Team</a>
+              <Link to="/helping-tribe" className="text-stone-400 hover:text-white transition-colors">Helping Tribe!</Link>
+              <Link to="/foundation" className="text-stone-400 hover:text-white transition-colors">BlakMoh Wellbeing Foundation</Link>
+              <Link to="/about#team" className="text-stone-400 hover:text-white transition-colors">Team</Link>
             </div>
           </div>
 
-          {/* Contact */}
           <div>
             <h4 className="font-bold mb-5 text-white">Contact Us</h4>
             <div className="flex flex-col gap-4 text-sm">
@@ -150,8 +270,6 @@ export function Footer() {
                 <span className="text-stone-400">+234 (0) 703 005 2021</span>
               </div>
             </div>
-
-            {/* Newsletter */}
             <div className="mt-6">
               <p className="text-stone-400 text-xs mb-3">Stay updated with our latest insights.</p>
               <div className="flex bg-stone-800 rounded-xl p-1 overflow-hidden">
@@ -180,13 +298,12 @@ export function Footer() {
   );
 }
 
+// ─── Layout ───────────────────────────────────────────────────────────────────
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow pt-20">
-        {children}
-      </main>
+      <main className="flex-grow pt-20">{children}</main>
       <Footer />
     </div>
   );
