@@ -22,6 +22,7 @@ const boardMembers = [
   { name: 'Prof D.A Oluwole', role: 'Member, Board of Expert — Psychological Services', initials: 'DO' },
   { name: 'Mr Abdulrahman Lekk', role: 'Member, Board of Expert — Management Consulting', initials: 'AL' },
   { name: 'Dr Bukola Lawal', role: 'Member, Board of Experts, Test & Measurement', initials: 'BL' },
+  { name: 'Dr Temitope Adeleye', role: 'Member, Board of Experts', initials: 'TA' },
 ];
 
 const coreValues = [
@@ -134,7 +135,7 @@ export default function About() {
               Meet The Board of Expertise
             </h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {boardMembers.map((member, i) => (
               <motion.div key={member.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }} whileHover={{ y: -6 }}

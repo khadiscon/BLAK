@@ -29,6 +29,39 @@ const navItems: NavItem[] = [
   { name: 'Contact Us', path: '/contact' },
 ];
 
+function BrandLogo({
+  onClick,
+  variant = 'light',
+}: {
+  onClick?: () => void;
+  variant?: 'light' | 'dark';
+}) {
+  const textClass = variant === 'dark' ? 'text-white' : 'text-green-800';
+  const markClass = variant === 'dark'
+    ? 'bg-white shadow-lg shadow-black/20'
+    : 'bg-white ring-1 ring-stone-200 shadow-sm';
+
+  return (
+    <Link
+      to="/"
+      className="inline-flex items-center gap-3"
+      onClick={onClick}
+      aria-label="BlakMoh home"
+    >
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl ${markClass}`}>
+        <img
+          src="/assets/blakmoh-logo.png"
+          alt=""
+          className="h-9 w-9 object-contain"
+        />
+      </span>
+      <span className={`text-xl font-bold tracking-tighter font-headline ${textClass}`}>
+        Blakmoh
+      </span>
+    </Link>
+  );
+}
+
 // ─── Dropdown Menu ────────────────────────────────────────────────────────────
 function DropdownMenu({
   items,
@@ -87,12 +120,12 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // close everything on route change
+  // close everything on route or section change
   useEffect(() => {
     setDesktopDropdown(null);
     setMobileDropdown(null);
     setMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   const closeMenu = () => {
     setMenuOpen(false);
@@ -119,9 +152,7 @@ export function Navbar() {
       <header className="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-stone-100">
         <nav ref={navRef} className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold tracking-tighter text-green-800 font-headline flex items-center gap-2" onClick={closeMenu}>
-            Blakmoh
-          </Link>
+          <BrandLogo onClick={closeMenu} />
 
           {/* Desktop nav */}
           <div className="hidden lg:flex items-center gap-7">
@@ -249,7 +280,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="text-xl font-bold mb-4">Blakmoh</div>
+            <div className="mb-4">
+              <BrandLogo variant="dark" />
+            </div>
             <p className="text-stone-400 text-sm leading-relaxed mb-6 max-w-xs">
               BlakMoh Consulting (BN3303037) is a learning organization providing tailored solutions to all categories
               of persons and organizations in need of psychological support services.

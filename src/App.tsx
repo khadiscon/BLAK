@@ -23,10 +23,26 @@ import DepressionAgency from './pages/articles/DepressionAgency';
 import HopeDespair from './pages/articles/HopeDespair';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    const frameId = window.requestAnimationFrame(() => {
+      if (!hash) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const element = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (!element) return;
+
+      const headerOffset = 96;
+      const top = element.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [pathname, hash]);
+
   return null;
 }
 
