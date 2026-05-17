@@ -1,16 +1,22 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { CheckCircle, ArrowRight, Heart, BookOpen } from 'lucide-react';
+import { CheckCircle, ArrowRight, Heart, BookOpen, Loader, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useEmailJS } from '../lib/useEmailJS';
+import { EMAILJS_CONFIG } from '../lib/emailConfig';
 
 const services = [
   {
     title: 'Psychological Services',
     description: 'We provide counseling, therapy, and assessments for personal growth.',
     icon: Heart,
+    path: '/services',
   },
   {
     title: 'Learning & Development Services',
     description: 'We deliver training and development for lasting professional impact.',
     icon: BookOpen,
+    path: '/services',
   },
 ];
 
@@ -20,6 +26,40 @@ const stats = [
   { value: '8+', label: 'Experienced Years', description: 'Years supporting mental health and personal growth.' },
   { value: '15K+', label: 'Clients Helped', description: 'Guided clients toward better workplace wellbeing.' },
 ];
+
+function NewsletterForm() {
+  const { status, send } = useEmailJS();
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    await send(EMAILJS_CONFIG.NEWSLETTER_TEMPLATE_ID, { subscriber_email: email });
+    setEmail('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Your Email"
+        className="flex-1 bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-full px-6 py-4 outline-none focus:border-primary transition-colors"
+      />
+      <button
+        type="submit"
+        disabled={status === 'sending' || status === 'success'}
+        className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-bold whitespace-nowrap hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-70"
+      >
+        {status === 'sending' && <Loader className="w-4 h-4 animate-spin" />}
+        {status === 'success' && <CheckCircle2 className="w-4 h-4" />}
+        {status === 'success' ? 'Subscribed!' : 'Get Started'}
+      </button>
+    </form>
+  );
+}
 
 export default function Home() {
   return (
@@ -40,15 +80,22 @@ export default function Home() {
               Let's Build the Future of Work Together
             </h1>
             <p className="text-lg md:text-xl text-on-surface-variant max-w-xl mb-10 leading-relaxed">
-              BlakMoh Consulting is a learning organization that provides tailored solutions to individuals and organizations in need of psychological support and capacity-building services.
+              BlakMoh Consulting is a learning organization that provides tailored solutions to individuals and
+              organizations in need of psychological support and capacity-building services.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="px-8 py-4 bg-primary-container text-on-primary-container rounded-full font-bold text-lg hover:translate-y-[-1px] transition-all duration-300 shadow-md">
+              <Link
+                to="/services"
+                className="px-8 py-4 bg-primary-container text-on-primary-container rounded-full font-bold text-lg hover:translate-y-[-1px] transition-all duration-300 shadow-md"
+              >
                 Explore Services
-              </button>
-              <button className="px-8 py-4 bg-transparent text-primary border-2 border-primary/20 hover:border-primary rounded-full font-bold text-lg transition-all duration-300">
+              </Link>
+              <Link
+                to="/about"
+                className="px-8 py-4 bg-transparent text-primary border-2 border-primary/20 hover:border-primary rounded-full font-bold text-lg transition-all duration-300"
+              >
                 Our Methodology
-              </button>
+              </Link>
             </div>
           </motion.div>
 
@@ -75,7 +122,7 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-        <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-gradient-to-l from-primary-container/5 to-transparent rounded-bl-[10rem]"></div>
+        <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-gradient-to-l from-primary-container/5 to-transparent rounded-bl-[10rem]" />
       </section>
 
       {/* Services Section */}
@@ -106,9 +153,9 @@ export default function Home() {
                   </div>
                   <h3 className="text-xl font-bold mb-3">{service.title}</h3>
                   <p className="text-on-surface-variant leading-relaxed mb-6">{service.description}</p>
-                  <a href="#" className="text-primary font-bold flex items-center gap-2 group">
+                  <Link to={service.path} className="text-primary font-bold flex items-center gap-2 group">
                     Learn More <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </a>
+                  </Link>
                 </motion.div>
               );
             })}
@@ -131,11 +178,15 @@ export default function Home() {
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-on-surface">We support your path to mental growth.</h2>
               <p className="text-on-surface-variant text-base md:text-lg mb-6">
-                BlakMoh Consulting (BN3303037) is a learning organization providing tailored solutions to all categories of persons and organizations in need of psychological support services and capacity building solutions.
+                BlakMoh Consulting (BN3303037) is a learning organization providing tailored solutions to all categories
+                of persons and organizations in need of psychological support services and capacity building solutions.
               </p>
-              <button className="px-8 py-4 bg-on-surface text-surface rounded-full font-bold hover:opacity-90 transition-opacity">
+              <Link
+                to="/contact"
+                className="inline-block px-8 py-4 bg-on-surface text-surface rounded-full font-bold hover:opacity-90 transition-opacity"
+              >
                 Book a Consultation
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -169,18 +220,9 @@ export default function Home() {
                 Stay updated with our latest insights, courses, and wellbeing resources.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="flex-1 bg-white/10 border border-white/20 text-white placeholder:text-white/50 rounded-full px-6 py-4 outline-none focus:border-primary transition-colors"
-              />
-              <button className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-bold whitespace-nowrap hover:opacity-90 transition-opacity">
-                Get Started
-              </button>
-            </div>
+            <NewsletterForm />
           </div>
-          <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-primary-container/20 blur-[100px] rounded-full"></div>
+          <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-primary-container/20 blur-[100px] rounded-full" />
         </div>
       </section>
     </div>

@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
 import { CheckCircle, ArrowRight, BookOpen, Star, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 function PlaceholderImage({ className = '' }: { className?: string }) {
   return (
@@ -142,10 +141,13 @@ export default function HelpingTribe() {
               By joining The Helping Tribe, you become part of a movement towards a more collaborative and
               supportive future for budding therapists.
             </p>
-            <Link to="/contact"
+            <a
+              href="https://helpingtribeacademy.com/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-bold hover:opacity-90 hover:translate-y-[-2px] transition-all duration-300">
               JOIN US <ArrowRight className="w-5 h-5" />
-            </Link>
+            </a>
           </div>
           <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-primary-container/10 blur-[100px] rounded-full" />
         </div>
