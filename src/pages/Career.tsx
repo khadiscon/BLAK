@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Users, TrendingUp, Heart, ArrowRight } from 'lucide-react';
+import { Mail, Users, TrendingUp, Heart, ArrowRight, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useEmailJS } from '../lib/useEmailJS';
+import { EMAILJS_CONFIG, CONTACT_INFO } from '../lib/emailConfig';
 
 function PlaceholderImage({ className = '' }: { className?: string }) {
   return (
@@ -22,16 +24,29 @@ const perks = [
   { icon: Users, title: 'Dynamic Team', desc: 'Join a collaborative community of passionate mental health professionals.' },
 ];
 
+const emptyForm = { name: '', phone: '', email: '', role: '', message: '' };
+
 export default function Career() {
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', role: '', message: '' });
+  const { status, send } = useEmailJS();
+  const [formData, setFormData] = useState(emptyForm);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    alert('Application submitted! We will be in touch.');
-    setFormData({ name: '', phone: '', email: '', role: '', message: '' });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await send(EMAILJS_CONFIG.CAREER_TEMPLATE_ID, {
+      from_name: formData.name,
+      from_email: formData.email,
+      phone: formData.phone,
+      role: formData.role,
+      message: formData.message,
+      to_email: CONTACT_INFO.email,
+    });
+    if (status !== 'error') {
+      setFormData(emptyForm);
+    }
   };
 
   return (
@@ -51,12 +66,14 @@ export default function Career() {
               Join BlakMoh Consulting and contribute to our mission of empowering individuals and organizations
               through tailored psychological support and capacity building solutions.
             </p>
-            <a href="mailto:info@blakmoh.com"
-              className="inline-flex items-center gap-3 group">
+            <a
+              href={`mailto:${CONTACT_INFO.email}`}
+              className="inline-flex items-center gap-3 group"
+            >
               <div className="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary group-hover:bg-primary-container/20 transition-colors">
                 <Mail className="w-5 h-5" />
               </div>
-              <span className="font-bold text-primary group-hover:underline">info@blakmoh.com</span>
+              <span className="font-bold text-primary group-hover:underline">{CONTACT_INFO.email}</span>
             </a>
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}>
@@ -97,8 +114,10 @@ export default function Career() {
           </div>
           <div className="text-center">
             <p className="text-on-surface-variant mb-4">Explore current openings and apply today.</p>
-            <a href="mailto:info@blakmoh.com"
-              className="inline-flex items-center gap-2 border-2 border-primary text-primary px-8 py-3 rounded-full font-bold hover:bg-primary hover:text-white transition-all duration-300">
+            <a
+              href={`mailto:${CONTACT_INFO.email}`}
+              className="inline-flex items-center gap-2 border-2 border-primary text-primary px-8 py-3 rounded-full font-bold hover:bg-primary hover:text-white transition-all duration-300"
+            >
               Send us A Mail <ArrowRight className="w-5 h-5" />
             </a>
           </div>
@@ -115,7 +134,7 @@ export default function Career() {
               We are here to answer your questions 24/7
             </p>
             <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tighter mb-6">
-              Need A Consultation?
+              Apply Now
             </h2>
             <p className="text-white/65 leading-relaxed text-base">
               The goal is to support individuals in understanding and managing their emotions, thoughts, and
@@ -123,27 +142,69 @@ export default function Career() {
             </p>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}
-            className="bg-surface-container-lowest/10 backdrop-blur-md rounded-[2rem] p-8 border border-white/10 space-y-4">
-            <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange}
-              className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition" />
-            <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange}
-              className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition" />
-            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange}
-              className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition" />
-            <select name="role" value={formData.role} onChange={handleChange}
-              className="w-full bg-white text-on-surface px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition appearance-none cursor-pointer">
-              <option value="">Select Role</option>
-              <option value="internship">Internship</option>
-              <option value="volunteer">Volunteer</option>
-              <option value="contract">Contract Staff</option>
-            </select>
-            <textarea name="message" placeholder="Message" value={formData.message} onChange={handleChange} rows={4}
-              className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition resize-none" />
-            <button onClick={handleSubmit}
-              className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-bold text-base hover:opacity-90 hover:translate-y-[-2px] transition-all duration-300 uppercase tracking-wide">
-              Send Application
-            </button>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            className="bg-surface-container-lowest/10 backdrop-blur-md rounded-[2rem] p-8 border border-white/10 space-y-4"
+          >
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text" name="name" placeholder="Name" required
+                value={formData.name} onChange={handleChange}
+                className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition"
+              />
+              <input
+                type="tel" name="phone" placeholder="Phone Number" required
+                value={formData.phone} onChange={handleChange}
+                className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition"
+              />
+              <input
+                type="email" name="email" placeholder="Email" required
+                value={formData.email} onChange={handleChange}
+                className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition"
+              />
+              <select
+                name="role" required title="Role"
+                value={formData.role} onChange={handleChange}
+                className="w-full bg-white text-on-surface px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition appearance-none cursor-pointer"
+              >
+                <option value="">Select Role</option>
+                <option value="internship">Internship</option>
+                <option value="volunteer">Volunteer</option>
+                <option value="contract">Contract Staff</option>
+              </select>
+              <textarea
+                name="message" placeholder="Tell us about yourself" required rows={4}
+                value={formData.message} onChange={handleChange}
+                className="w-full bg-white text-on-surface placeholder:text-outline px-5 py-4 rounded-2xl outline-none focus:ring-2 focus:ring-primary transition resize-none"
+              />
+
+              {status === 'success' && (
+                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl text-green-700">
+                  <CheckCircle className="w-5 h-5 shrink-0" />
+                  <span className="font-medium text-sm">Application sent! We'll be in touch soon.</span>
+                </div>
+              )}
+              {status === 'error' && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700">
+                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  <span className="font-medium text-sm">Something went wrong. Email us at {CONTACT_INFO.email}.</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-bold text-base hover:opacity-90 hover:translate-y-[-2px] transition-all duration-300 uppercase tracking-wide flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {status === 'sending' ? (
+                  <><Loader className="w-5 h-5 animate-spin" /> Sending…</>
+                ) : (
+                  'Send Application'
+                )}
+              </button>
+            </form>
           </motion.div>
         </div>
       </section>

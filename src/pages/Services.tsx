@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { CheckCircle, ArrowRight, Verified, Brain, Users, Leaf, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Services() {
   return (
@@ -20,9 +21,12 @@ export default function Services() {
               We offer a spectrum of evidence-based psychological services designed to foster resilience, optimize performance, and restore mental equilibrium.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-bold text-lg hover:translate-y-[-2px] transition-all duration-300 shadow-xl shadow-primary-container/20">
+              <Link
+                to="/contact"
+                className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-bold text-lg hover:translate-y-[-2px] transition-all duration-300 shadow-xl shadow-primary-container/20"
+              >
                 Explore Care Paths
-              </button>
+              </Link>
             </div>
           </motion.div>
           
@@ -64,10 +68,10 @@ export default function Services() {
               whileHover={{ y: -4 }}
               className="md:col-span-8 md:row-span-2 bg-surface-container-lowest rounded-[2rem] p-10 flex flex-col justify-between group overflow-hidden relative border border-outline-variant/10"
             >
-              <div className="z-10">
+              <div className="relative z-10">
                 <Users className="text-primary w-10 h-10 mb-6 block" />
                 <h3 className="text-3xl font-headline font-bold text-on-surface mb-4">Individual Therapy</h3>
-                <p className="text-on-surface-variant max-w-md leading-relaxed">Personalized one-on-one sessions focusing on anxiety, depression, trauma recovery, and personal growth using CBT and Mindfulness-based approaches.</p>
+                <p className="text-on-surface-variant max-w-[55%] leading-relaxed">Personalized one-on-one sessions focusing on anxiety, depression, trauma recovery, and personal growth using CBT and Mindfulness-based approaches.</p>
                 <ul className="mt-8 space-y-3">
                   <li className="flex items-center gap-3 text-on-surface font-medium">
                     <CheckCircle className="text-primary w-5 h-5" />
@@ -79,9 +83,9 @@ export default function Services() {
                   </li>
                 </ul>
               </div>
-              <img 
-                alt="Therapy Room" 
-                className="absolute right-0 bottom-0 w-1/2 h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" 
+              <img
+                alt="Therapy Room"
+                className="absolute right-0 bottom-0 w-1/2 h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500 -z-10" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzbXnLAwe_SYpo-ziFECuhpHYhUXpZD1ZMJs4Sb9ird3NVx2ilWaNYa6o0eJSeGmaJg-ZshU4EK38lmQm-SJb922XO3zIhOlVep_29mXD5Lvh4sM-d4lZ-jglRgd-UF1g32DCxwV8ocn-jk2Fcj_rHQv9DVoa9MD3U7D_DiltVSSQgQlsPeTqV5r_5sq79ofPHuAAd94OYKS2_2eug1aYcywRw9JDryYvO3hv6tTpvWa30kZKRf9weUdEL-4vwrJsc7JyXacS9-w"
                 referrerPolicy="no-referrer"
               />
@@ -97,9 +101,9 @@ export default function Services() {
                 <h3 className="text-3xl font-headline font-bold mb-4">Diagnostic Assessments</h3>
                 <p className="text-white/80 leading-relaxed">Thorough clinical evaluations including ADHD screening, neurocognitive testing, and personality assessments.</p>
               </div>
-              <button className="flex items-center gap-2 font-bold text-lg hover:gap-4 transition-all">
+              <Link to="/contact" className="flex items-center gap-2 font-bold text-lg hover:gap-4 transition-all">
                 View Battery <ArrowRight className="w-6 h-6" />
-              </button>
+              </Link>
             </motion.div>
 
             {/* Corporate Training */}
@@ -178,8 +182,15 @@ export default function Services() {
             <h2 className="text-4xl md:text-5xl font-headline font-bold text-inverse-on-surface mb-6">Ready to prioritize your <span className="text-primary-fixed">mental capital</span>?</h2>
             <p className="text-surface-variant text-lg mb-10 max-w-2xl mx-auto">Take the first step towards professional psychological support. Schedule an initial consultation with our clinical intake team today.</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform">Schedule Initial Consultation</button>
-              <button className="border border-outline-variant/30 text-inverse-on-surface px-10 py-4 rounded-full font-bold hover:bg-white/5 transition-colors">Download Service Guide</button>
+              <Link to="/contact" className="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform text-center">
+                Schedule Initial Consultation
+              </Link>
+              <a
+                href="mailto:info@blakmoh.com?subject=Service Guide Request"
+                className="border border-outline-variant/30 text-inverse-on-surface px-10 py-4 rounded-full font-bold hover:bg-white/5 transition-colors text-center"
+              >
+                Download Service Guide
+              </a>
             </div>
           </div>
         </div>
